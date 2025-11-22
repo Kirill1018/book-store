@@ -41,7 +41,7 @@ namespace BookStore
                 {
                     SqlCommand sqlCommand = new SqlCommand(sql, Header.SqlConnection);
                     sqlCommand.ExecuteNonQuery();
-                    IStore.Load(this.Store);
+                    Header.Load(this.Store);
                     Close();
                 }
                 else return;

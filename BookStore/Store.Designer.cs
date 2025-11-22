@@ -45,11 +45,12 @@
             label2 = new Label();
             searchVal = new TextBox();
             reset = new Button();
-            label3 = new Label();
             label4 = new Label();
             period = new ComboBox();
             quest = new Button();
             reboot = new Button();
+            label3 = new Label();
+            group = new ComboBox();
             ((System.ComponentModel.ISupportInitialize)volumes).BeginInit();
             SuspendLayout();
             // 
@@ -215,19 +216,10 @@
             reset.UseVisualStyleBackColor = true;
             reset.Click += OnClickRes;
             // 
-            // label3
-            // 
-            label3.AutoSize = true;
-            label3.Location = new Point(1018, 158);
-            label3.Name = "label3";
-            label3.Size = new Size(54, 15);
-            label3.TabIndex = 17;
-            label3.Text = "новинки";
-            // 
             // label4
             // 
             label4.AutoSize = true;
-            label4.Location = new Point(1018, 173);
+            label4.Location = new Point(1018, 202);
             label4.Name = "label4";
             label4.Size = new Size(47, 15);
             label4.TabIndex = 19;
@@ -236,14 +228,14 @@
             // period
             // 
             period.FormattingEnabled = true;
-            period.Location = new Point(1018, 191);
+            period.Location = new Point(1018, 220);
             period.Name = "period";
             period.Size = new Size(121, 23);
             period.TabIndex = 20;
             // 
             // quest
             // 
-            quest.Location = new Point(1018, 220);
+            quest.Location = new Point(1018, 249);
             quest.Name = "quest";
             quest.Size = new Size(75, 23);
             quest.TabIndex = 21;
@@ -253,7 +245,7 @@
             // 
             // reboot
             // 
-            reboot.Location = new Point(1018, 249);
+            reboot.Location = new Point(1018, 278);
             reboot.Name = "reboot";
             reboot.Size = new Size(75, 23);
             reboot.TabIndex = 22;
@@ -261,11 +253,29 @@
             reboot.UseVisualStyleBackColor = true;
             reboot.Click += OnClickReb;
             // 
+            // label3
+            // 
+            label3.AutoSize = true;
+            label3.Location = new Point(1018, 158);
+            label3.Name = "label3";
+            label3.Size = new Size(62, 15);
+            label3.TabIndex = 17;
+            label3.Text = "категория";
+            // 
+            // group
+            // 
+            group.FormattingEnabled = true;
+            group.Location = new Point(1018, 176);
+            group.Name = "group";
+            group.Size = new Size(200, 23);
+            group.TabIndex = 23;
+            // 
             // Store
             // 
             AutoScaleDimensions = new SizeF(7F, 15F);
             AutoScaleMode = AutoScaleMode.Font;
-            ClientSize = new Size(1184, 450);
+            ClientSize = new Size(1284, 450);
+            Controls.Add(group);
             Controls.Add(reboot);
             Controls.Add(quest);
             Controls.Add(period);
@@ -314,10 +324,11 @@
         private Label label2;
         private TextBox searchVal;
         private Button reset;
-        private Label label3;
         private Label label4;
         public ComboBox period;
         private Button quest;
         private Button reboot;
+        private Label label3;
+        public ComboBox group;
     }
 }

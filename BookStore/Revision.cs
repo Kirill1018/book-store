@@ -56,7 +56,7 @@ namespace BookStore
                     + $"isCont = '{isProl}' where Id = {this.Book.GetId()}";
                 SqlCommand sqlCommand = new SqlCommand(sql, Header.SqlConnection);
                 sqlCommand.ExecuteNonQuery();
-                IStore.Load(this.Store);
+                Header.Load(this.Store);
                 Close();
             }
             catch (FormatException)

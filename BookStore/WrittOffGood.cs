@@ -15,7 +15,9 @@ namespace BookStore
             while (iDataReader.Read()) bookIds.Add(iDataReader
                 .GetInt32(1));
             iDataReader.Close();
-            goods.DataSource = Header.Select(bookIds);
+            List<Book> bookList = new List<Book>();
+            foreach (int id in bookIds) Header.Add(Header.SelFromBooks(id), bookList);
+            goods.DataSource = bookList;
         }
     }
 }

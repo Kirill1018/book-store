@@ -40,7 +40,7 @@ namespace BookStore
                     .Size)} where Id = {id}";
                 sqlCommand = new SqlCommand(sql, SqlConnection);
                 sqlCommand.ExecuteNonQuery();
-                IStore.Load(this.Store);
+                Header.Load(this.Store);
                 Close();
             }
             catch (NullReferenceException) { }

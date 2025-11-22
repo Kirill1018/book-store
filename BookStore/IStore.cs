@@ -5,32 +5,6 @@ namespace BookStore
 {
     internal interface IStore
     {
-        public static void Load(Store store)
-        {
-            string sql = "select * from books";
-            Header.Select(sql, store.volumes);
-            store.option.DataSource = Header
-                .Options;
-            store.period.DataSource = Header
-                .Periods;
-        }
-        public static void Add(string query, List<Book> list)
-        {
-            IDbCommand iDbCommand = new SqlCommand(query, Header.SqlConnection);
-            IDataReader iDataReader = iDbCommand.ExecuteReader();
-            while (iDataReader.Read())
-            {
-                string isCont = (iDataReader.GetBoolean(9)) ? "да" : "нет";
-                Book book = new Book(iDataReader.GetInt32(0), iDataReader.GetString(1),
-                    iDataReader.GetString(2), iDataReader.GetString(3),
-                    iDataReader.GetInt32(4), iDataReader.GetString(5),
-                    iDataReader.GetInt32(6), iDataReader.GetInt32(7),
-                    iDataReader.GetInt32(8), isCont,
-                    iDataReader.GetDateTime(10));
-                list.Add(book);
-            }
-            iDataReader.Close();
-        }
         public static bool IsWrittOff(Book book)
         {
             string sql = "select * from writeOffs";
@@ -68,6 +42,38 @@ namespace BookStore
             store.volumes.DataSource = store
                 .CommSourceOfData;
             store.CommSourceOfData = null;
+        }
+        public static void Add(Book volume, int i,
+            bool condition, List<Book> bookList)
+        {
+            volume.SetSaleCount(i);
+            if (condition) bookList.Add(volume);
+        }
+        public static List<Book> GetTheMostFamAuth(List<Book> bookList)
+        {
+            List<string> authors = new List<string>();
+            List<Book> tomes = new List<Book>();
+            foreach (Book book in bookList)
+            {
+                string? author = book.Author;
+                authors.Remove(author!);
+                authors.Add(author!);
+            }
+            foreach (string author in authors) foreach (Book volume in bookList) if (volume.Author == author) tomes.Add(volume);
+            return tomes;
+        }
+        public static List<Book> GetTheMostFamGenr(List<Book> bookList)
+        {
+            List<string> genres = new List<string>();
+            List<Book> tomes = new List<Book>();
+            foreach (Book book in bookList)
+            {
+                string? genre = book.Genre;
+                genres.Remove(genre!);
+                genres.Add(genre!);
+            }
+            foreach (string genre in genres) foreach (Book volume in bookList) if (volume.Genre == genre) tomes.Add(volume);
+            return tomes;
         }
     }
 }

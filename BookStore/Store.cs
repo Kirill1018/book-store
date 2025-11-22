@@ -13,10 +13,11 @@ namespace BookStore
         public object? SearchSourceOfData { get; set; }
         public object? QuestSourceOfData { get; set; }
         static string[] Periods { get; } = Header.Periods;
+        static string[] Groups { get; } = Header.Groups;
         public Store()
         {
             InitializeComponent();
-            IStore.Load(this);
+            Header.Load(this);
         }
 
         private void OnClickAdd(object sender, EventArgs e)
@@ -45,7 +46,7 @@ namespace BookStore
                 sql = $"delete from books where Id = {id}";
                 sqlCommand = new SqlCommand(sql, SqlConnection);
                 sqlCommand.ExecuteNonQuery();
-                IStore.Load(this);
+                Header.Load(this);
             }
             catch (NullReferenceException) { }
         }
@@ -72,7 +73,7 @@ namespace BookStore
                     notification.Show();
                     return;
                 }
-                string sql = $"insert into sales(bookId) values({book.GetId()})";
+                string sql = $"insert into sales(bookId, dateTimeOfSale) values({book.GetId()}, '{DateTime.Now}')";
                 SqlCommand sqlCommand = new SqlCommand(sql, SqlConnection);
                 sqlCommand.ExecuteNonQuery();
             }
@@ -90,6 +91,12 @@ namespace BookStore
             try
             {
                 Book book = (Book)volumes.CurrentRow.DataBoundItem;
+                if (IStore.IsWrittOff(book))
+                {
+                    Notification notification = new Notification(IsWrittOff);
+                    notification.Show();
+                    return;
+                }
                 string sql = $"insert into writeOffs(bookId) values({book.GetId()})";
                 SqlCommand sqlCommand = new SqlCommand(sql, SqlConnection);
                 sqlCommand.ExecuteNonQuery();
@@ -184,34 +191,128 @@ namespace BookStore
 
         private void OnClickQuest(object sender, EventArgs e)
         {
-            string perText = period.Text;
+            string perText = period.Text, firstPer = Periods.First(),
+                groupText = group.Text, firstGroup = Groups.First();
             if (this.CommSourceOfData is null) this.CommSourceOfData = volumes
                     .DataSource;
             DateTime dateTime = DateTime.Now;
             int year = dateTime.Year, month = dateTime.Month,
-                day = dateTime.Day;
-            List<Book> bookList = (List<Book>)volumes.DataSource, newListOfBooks = new List<Book>();
-            if (perText == Periods.First()) foreach (Book book in bookList)
+                day = dateTime.Day, weekDay = (int)dateTime.DayOfWeek;
+            List<Book> bookList = (List<Book>)volumes.DataSource, bestsList = new List<Book>(),
+                newListOfBooks = new List<Book>();
+            if (perText == firstPer) foreach (Book book in bookList)
                 {
-                    DateTime dateTimeOfBook = book.GetDateTime();
-                    if (dateTimeOfBook.Year == year && dateTimeOfBook.Month == month
-                        && (day - dateTimeOfBook.Day) == 0) newListOfBooks.Add(book);
+                    bool isSold = false;
+                    int iterator = 0;
+                    foreach (Book soldBook in Header.Select())
+                    {
+                        DateTime dateTimeOfSale = soldBook.GetDateTimeOfSale();
+                        if (soldBook.GetId() == book.GetId() && dateTimeOfSale
+                            .Year == year
+                            && dateTimeOfSale.Month == month && dateTimeOfSale.Day == day)
+                        {
+                            isSold = true;
+                            iterator++;
+                        }
+                    }
+                    IStore.Add(book, iterator,
+                        isSold, bestsList);
+                    bestsList = bestsList.OrderByDescending(volume => volume.GetSaleCount())
+                        .ToList();
+                    if (groupText == firstGroup)
+                    {
+                        DateTime dateTimeOfBook = book.GetDateTime();
+                        if (dateTimeOfBook.Year == year && dateTimeOfBook.Month == month
+                            && dateTimeOfBook.Day == day) newListOfBooks.Add(book);
+                    }
+                    else if (groupText == Groups[1]) newListOfBooks = bestsList;
+                    else if (groupText == Groups[2]) newListOfBooks = IStore.GetTheMostFamAuth(bestsList);
+                    else newListOfBooks = IStore.GetTheMostFamGenr(bestsList);
                 }
             else if (perText == Periods[1]) foreach (Book book in bookList)
                 {
-                    DateTime dateTimeOfBook = book.GetDateTime();
-                    if (dateTimeOfBook.Year == year && dateTimeOfBook.Month == month
-                        && (day - dateTimeOfBook.Day) <= (int)dateTime.DayOfWeek) newListOfBooks
-                            .Add(book);
+                    bool isSold = false;
+                    int iterator = 0;
+                    foreach (Book soldBook in Header.Select())
+                    {
+                        DateTime dateTimeOfSale = soldBook.GetDateTimeOfSale();
+                        if (soldBook.GetId() == book.GetId() && dateTimeOfSale
+                            .Year == year
+                            && dateTimeOfSale.Month == month && (day - dateTimeOfSale.Day) <= weekDay)
+                        {
+                            isSold = true;
+                            iterator++;
+                        }
+                    }
+                    IStore.Add(book, iterator,
+                        isSold, bestsList);
+                    bestsList = bestsList.OrderByDescending(volume => volume.GetSaleCount())
+                        .ToList();
+                    if (groupText == firstGroup)
+                    {
+                        DateTime dateTimeOfBook = book.GetDateTime();
+                        if (dateTimeOfBook.Year == year && dateTimeOfBook.Month == month
+                            && (day - dateTimeOfBook.Day) <= weekDay) newListOfBooks.Add(book);
+                    }
+                    else if (groupText == Groups[1]) newListOfBooks = bestsList;
+                    else if (groupText == Groups[2]) newListOfBooks = IStore.GetTheMostFamAuth(bestsList);
+                    else newListOfBooks = IStore.GetTheMostFamGenr(bestsList);
                 }
             else if (perText == Periods[2]) foreach (Book book in bookList)
                 {
-                    DateTime dateTimeOfBook = book.GetDateTime();
-                    if (dateTimeOfBook.Year == year && dateTimeOfBook.Month == month) newListOfBooks
-                            .Add(book);
+                    bool isSold = false;
+                    int iterator = 0;
+                    foreach (Book soldBook in Header.Select())
+                    {
+                        DateTime dateTimeOfSale = soldBook.GetDateTimeOfSale();
+                        if (soldBook.GetId() == book.GetId() && dateTimeOfSale
+                            .Year == year)
+                        {
+                            isSold = true;
+                            iterator++;
+                        }
+                    }
+                    IStore.Add(book, iterator,
+                        isSold, bestsList);
+                    bestsList = bestsList.OrderByDescending(volume => volume.GetSaleCount())
+                        .ToList();
+                    if (groupText == firstGroup)
+                    {
+                        DateTime dateTimeOfBook = book.GetDateTime();
+                        if (dateTimeOfBook.Year == year && dateTimeOfBook.Month == month) newListOfBooks
+                                .Add(book);
+                    }
+                    else if (groupText == Groups[1]) newListOfBooks = bestsList;
+                    else if (groupText == Groups[2]) newListOfBooks = IStore.GetTheMostFamAuth(bestsList);
+                    else newListOfBooks = IStore.GetTheMostFamGenr(bestsList);
                 }
-            else foreach (Book book in bookList) if (book.GetDateTime().Year == year) newListOfBooks
+            else foreach (Book book in bookList)
+                {
+                    bool isSold = false;
+                    int iterator = 0;
+                    foreach (Book soldBook in Header.Select())
+                    {
+                        DateTime dateTimeOfSale = soldBook.GetDateTimeOfSale();
+                        if (soldBook.GetId() == book.GetId() && dateTimeOfSale
+                            .Year == year)
+                        {
+                            isSold = true;
+                            iterator++;
+                        }
+                    }
+                    IStore.Add(book, iterator,
+                        isSold, bestsList);
+                    bestsList = bestsList.OrderByDescending(volume => volume.GetSaleCount())
+                        .ToList();
+                    if (groupText == firstGroup)
+                    {
+                        if (book.GetDateTime().Year == year) newListOfBooks
                             .Add(book);
+                    }
+                    else if (groupText == Groups[1]) newListOfBooks = bestsList;
+                    else if (groupText == Groups[2]) newListOfBooks = IStore.GetTheMostFamAuth(bestsList);
+                    else newListOfBooks = IStore.GetTheMostFamGenr(bestsList);
+                }
             volumes.DataSource = newListOfBooks;
             this.QuestSourceOfData = newListOfBooks;
         }
@@ -219,6 +320,7 @@ namespace BookStore
         private void OnClickReb(object sender, EventArgs e)
         {
             period.Text = Periods.First();
+            group.Text = Groups.First();
             this.QuestSourceOfData = null;
             if (this.CommSourceOfData is null) return;
             if (this.SearchSourceOfData is null)
